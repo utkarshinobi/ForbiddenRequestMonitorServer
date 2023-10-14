@@ -66,5 +66,5 @@ def handle_request(path):
         return make_response("Not Found", 404)
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=80)
 
