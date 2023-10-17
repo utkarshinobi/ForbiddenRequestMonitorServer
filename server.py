@@ -25,7 +25,7 @@ def publish_message(project_id, topic_name, message):
     except Exception as e:
         logger.log_text(f"An error occurred: {e}", severity='ERROR')
 
-@app.route('/<path:path>', methods=['GET'])
+@app.route('/<path:path>', methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'])
 def handle_request(path):
     if request.method != 'GET':
         error_message = "501 Not Implemented: The server does not support the functionality required to fulfill the request."
