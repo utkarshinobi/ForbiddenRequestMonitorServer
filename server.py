@@ -1,6 +1,8 @@
 from flask import Flask, request, abort, make_response
 from google.cloud import storage, pubsub_v1
 from google.cloud import logging
+import requests
+import os
 
 app = Flask(__name__)
 
@@ -24,6 +26,17 @@ def publish_message(project_id, topic_name, message):
 
     except Exception as e:
         logger.log_text(f"An error occurred: {e}", severity='ERROR')
+
+def get_instance_zone():
+    """ Fetches the zone information of the current GCP instance. """
+    metadata_server = "http://metadata.google.internal/computeMetadata/v1/instance/zone"
+    metadata_flavor = {"Metadata-Flavor": "Google"}
+    try:
+        response = requests.get(metadata_server, headers=metadata_flavor)
+        if response.status_code == 200:
+            return response.text.split('/')[-1]
+    except requests.exceptions.RequestException:
+        return "Unknown"
 
 @app.route('/<path:path>', methods=['GET', 'PUT', 'POST', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'])
 def handle_request(path):
@@ -60,11 +73,23 @@ def handle_request(path):
         blob = storage.Blob(file_name, bucket)
         file_content = blob.download_as_text()
         logger.log_text("200 OK: File retrieved successfully.")
-        return file_content, 200
+        zone = get_instance_zone()  # Fetch the zone information
+        response = make_response("File retrieved successfully.", 200)
+        response.headers['X-Server-Zone'] = zone
+        return response
     except Exception as e:
         logger.log_text(f"404 Not Found: {e}", severity='ERROR')
-        return make_response("Not Found", 404)
+        zone = get_instance_zone()
+        response = make_response("Not Found", 404)
+        response.headers['X-Server-Zone'] = zone
+        return response
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80)
+    app.run(host = '0.0.0.0', port = 80)
 
+
+# curl http://EXTERNAL_IP:5000/your_endpoint
+
+
+# curl -H "X-country: USA" http://35.211.56.56/utkarsh-hw2-bucket/new-folder/0.html
+# curl -H "X-country: USA" http://127.0.0.1:5000/utkarsh-hw2-bucket/new-folder/0.html
