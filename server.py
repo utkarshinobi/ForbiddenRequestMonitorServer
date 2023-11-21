@@ -9,7 +9,7 @@ app = Flask(__name__)
 BANNED_COUNTRIES = ['North Korea', 'Iran', 'Cuba', 'Myanmar', 'Iraq', 'Libya', 'Sudan', 'Zimbabwe', 'Syria']
 
 logging_client = logging.Client()
-log_name = "hw4-logs"
+log_name = "hw8-logs"
 logger = logging_client.logger(log_name)
 
 def publish_message(project_id, topic_name, message):
@@ -84,6 +84,10 @@ def handle_request(path):
         response.headers['X-Server-Zone'] = zone
         return response
 
+@app.route('/', methods=['GET'])
+def health_check():
+    return "Health Check OK", 200
+
 if __name__ == "__main__":
     app.run(host = '0.0.0.0', port = 80)
 
@@ -93,3 +97,6 @@ if __name__ == "__main__":
 
 # curl -H "X-country: USA" http://35.211.56.56/utkarsh-hw2-bucket/new-folder/0.html
 # curl -H "X-country: USA" http://127.0.0.1:5000/utkarsh-hw2-bucket/new-folder/0.html
+
+
+# python3 http-client.py -d 35.196.164.219 -p 80 -b /utkarsh-hw2-bucket -w new-folder -n 100 -i 99 -v
