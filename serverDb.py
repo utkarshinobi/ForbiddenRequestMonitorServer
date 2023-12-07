@@ -76,8 +76,8 @@ def handle_request(path):
     logger.log_text(f"Received request for file: {file_name} from country: {country}")
     client_ip = get_client_ip()
     gender = request.headers.get('X-gender')
-    age = int(request.headers.get('X-age', 0))
-    income = float(request.headers.get('X-income', 0.0))
+    age = request.headers.get('X-age', '0')
+    income = request.headers.get('X-income', '0.0')
     is_banned = country in BANNED_COUNTRIES
     time_of_day = datetime.now().time()
     if country in BANNED_COUNTRIES:
@@ -99,6 +99,10 @@ def handle_request(path):
         logger.log_text(f"404 Not Found: {e}", severity='ERROR')
         insert_failed_request(datetime.now(), file_name, 404)
         return make_response("Not Found", 404)
+
+@app.route('/')
+def hello_world():
+    return 'Hello World!'
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=80)
